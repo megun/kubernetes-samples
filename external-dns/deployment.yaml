@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: external-dns-public
+  name: external-dns-public
+  namespace: kube-system
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: external-dns-public
+  template:
+    metadata:
+      labels:
+        app: external-dns-public
+      # If you're using kiam or kube2iam, specify the following annotation.
+      # Otherwise, you may safely omit it.
+      #annotations:
+      #  iam.amazonaws.com/role: arn:aws:iam::ACCOUNT-ID:role/IAM-SERVICE-ROLE-NAME
+    spec:
+      serviceAccountName: external-dns
+      containers:
+      - name: external-dns
+        image: registry.opensource.zalan.do/teapot/external-dns:latest
+        args:
+        #- --source=service
+        - --source=ingress
+        - --domain-filter=megunlabo.net # will make ExternalDNS see only the hosted zones matching provided domain, omit to process all available hosted zones
+        - --provider=aws
+        - --policy=sync # would prevent ExternalDNS from deleting any records, omit to enable full synchronization
+        - --aws-zone-type=public # only look at public hosted zones (valid values are public, private or no value for both)
+        - --registry=txt
+        - --txt-owner-id=cluster-001
+      securityContext:
+        fsGroup: 65534 # For ExternalDNS to be able to read Kubernetes and AWS token files
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: external-dns-private
+  name: external-dns-private
+  namespace: kube-system
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: external-dns-private
+  template:
+    metadata:
+      labels:
+        app: external-dns-private
+      # If you're using kiam or kube2iam, specify the following annotation.
+      # Otherwise, you may safely omit it.
+      #annotations:
+      #  iam.amazonaws.com/role: arn:aws:iam::ACCOUNT-ID:role/IAM-SERVICE-ROLE-NAME
+    spec:
+      serviceAccountName: external-dns
+      containers:
+      - name: external-dns-private
+        image: registry.opensource.zalan.do/teapot/external-dns:latest
+        args:
+        #- --source=service
+        - --source=ingress
+        - --domain-filter=local # will make ExternalDNS see only the hosted zones matching provided domain, omit to process all available hosted #zones
+        - --provider=aws
+        - --policy=sync # would prevent ExternalDNS from deleting any records, omit to enable full synchronization
+        - --aws-zone-type=private # only look at public hosted zones (valid values are public, private or no value for both)
+        - --registry=txt
+        - --txt-owner-id=cluster-001
+        #- --annotation-filter=kubernetes.io/ingress.class=internal-ingress
+      securityContext:
+        fsGroup: 65534 # For ExternalDNS to be able to read Kubernetes and AWS token files
