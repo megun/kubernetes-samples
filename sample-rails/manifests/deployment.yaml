@@ -1,0 +1,77 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "sample"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "service"
+  namespace: "sample"
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort
+  selector:
+    app: "rails-app"
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "ingress"
+  namespace: "sample"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-1:111111111111:certificate/75d48731-de8b-43ff-9c06-8a111b13601a
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+  labels:
+    app: ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+    - host: sample-app.megunlabo.net
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: "service"
+              servicePort: 80
+    - host: sample2-app.megunlabo.net
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: "service"
+              servicePort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "rails-app"
+  namespace: "sample"
+spec:
+  selector:
+    matchLabels:
+      app: "rails-app"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "rails-app"
+    spec:
+      containers:
+      - image: ruby:2.5
+        imagePullPolicy: Always
+        name: "rails-app"
+        ports:
+        - containerPort: 80

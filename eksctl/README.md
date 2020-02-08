@@ -1,3 +1,6 @@
+# cluster.yamlについて
+terraformから作成してる(../terraform/template.tf)
+
 # インストール
 
 * AWS CLI 最新にする
@@ -32,6 +35,13 @@ eksctl create cluster
 ## yamlから作成
 ```
 eksctl create cluster -f cluster.yaml
+```
+
+# ノードグループ管理
+## スケールアウト
+- ノードグループng-1-workersのdesiredを3にする
+```
+eksctl scale nodegroup --cluster=cluster-001 --nodes=3 ng-1-workers
 ```
 
 # EKSクラスタアップデート
@@ -84,6 +94,9 @@ eksctl utils associate-iam-oidc-provider --config-file=cluster.yaml --approve
 
 サービスアカウントとIAMロール作成
 eksctl create iamserviceaccount --config-file=cluster.yaml --override-existing-serviceaccounts --approve
+
+削除
+eksctl delete iamserviceaccount --config-file=cluster.yaml --only-missing --approve
 ```
 
 # faragete-profile
@@ -111,3 +124,27 @@ eksctl delete fargateprofile --cluster cluster-001 --name fp-dev --wait
 eksctl utils update-cluster-logging --config-file=cluster.yaml
 ```
 
+# gitops
+##  初期設定
+- fluxマニフェストをgitにpushして、fluxやらhelmやらなんやかんやをデプロイしてる
+```
+EKSCTL_EXPERIMENTAL=true eksctl enable repo -f cluster.yaml --git-url=git@github.com:megun/kubernetes-samples.git --git-email=akamarl.1127@gmail.com
+```
+- 結果表示された公開鍵をgit追加(リポジトリ読み書きできるようにする(タグ更新できればいいっぽい？))
+- pod確認
+```
+kubectl get pods -A
+```
+
+## サンプルデプロイ
+```
+
+
+EKSCTL_EXPERIMENTAL=true eksctl \
+        enable profile \
+        --git-url git@github.com:megun/kubernetes-samples.git \
+        --git-email akamarl.1127@gmail.com \
+        --cluster cluster-001 \
+        --region ap-northeast-1 \
+        app-dev
+```

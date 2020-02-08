@@ -1,0 +1,31 @@
+version: '3'
+services:
+  #db:
+    #image: postgres
+    #volumes:
+    #  - ./tmp/db:/var/lib/postgresql/data
+  db:
+    image: mysql:5.7.17
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql/volumes:/var/lib/mysql
+    environment:
+      MYSQL_USER: app001
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_HOST: db
+      RAILS_ENV: development
