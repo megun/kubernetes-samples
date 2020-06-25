@@ -5,11 +5,11 @@ bases:
 
 # additional resources like ingress rules, cluster and repository secrets.
 resources:
-- namespace.yaml
-- install.yaml
-- repos-secrets.yaml
+- base/namespace.yaml
+- base/install.yaml
+- base/repos-secrets.yaml
 
 # changes to config maps
 patchesStrategicMerge:
-- argocd-cm.yaml
-- argocd-server.yaml
+- overlays/argocd-cm.yaml
+- overlays/argocd-server.yaml
