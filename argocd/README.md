@@ -29,18 +29,6 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 # cluster追加
 argocd login localhost:8080
 kubectl config get-contexts
-argocd cluster add hironori@cluster-001.ap-northeast-1.eksctl.io
-
-
-
-gitopsなのでimageのバージョンをmanifest書き込むのが推奨っぽい
-overrideはできるけど、自動で判別するの無理。
-コマンドまたはUIからやるしかない
-argocd app set guestbook -p guestbook=image=example/guestbook:abcd123
-argocd app sync guestbook
-他の例をみても、CI回した後にイメージがプッシュされてそのイメージタグでgitに直コミットまたはPRするパターンが多い。
-
-１つのアプリケーションで複数のネームスペースにまたがってのデプロイができなさそう。
-istio-systemとsettlnetio-jpyを一緒にとか無理そう
+argocd cluster add xxx
 
 

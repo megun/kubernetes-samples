@@ -8,6 +8,8 @@ resources:
 - base/namespace.yaml
 - base/install.yaml
 - base/repos-secrets.yaml
+- base/app-argocd.yaml
+- base/project.yaml
 
 # changes to config maps
 patchesStrategicMerge:

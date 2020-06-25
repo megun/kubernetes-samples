@@ -1,0 +1,4 @@
+resources:
+- alb-ingress.yaml
+- cluster-autoscaler.yaml
+- external-dns.yaml
