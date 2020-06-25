@@ -1,11 +1,12 @@
 namespace: argocd
 
 bases:
-- https://github.com/argoproj/argo-cd//manifests/cluster-install?ref=v1.6.1
+#- https://github.com/argoproj/argo-cd//manifests/cluster-install?ref=v1.6.1
 
 # additional resources like ingress rules, cluster and repository secrets.
 resources:
 - namespace.yaml
+- install.yaml
 - repos-secrets.yaml
 
 # changes to config maps
